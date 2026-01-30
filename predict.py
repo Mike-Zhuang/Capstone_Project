@@ -2,7 +2,9 @@ import numpy as np
 import pandas as pd
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
-import matplotlib.pyplot as plt
+
+# 注意：我去掉了 matplotlib 的引用，因为服务器端我们不需要画图，只需要数字
+# 如果你需要画图，在 Unity 墙上的屏幕直接贴图片即可
 
 class ResourcePredictor:
     def __init__(self):
@@ -54,58 +56,3 @@ class ResourcePredictor:
             predictions.append(max(0, prediction))  # 确保非负
         
         return predictions
-    
-    def plot_predictions(self, actual, predicted, resource_name="资源"):
-        """绘制预测图表"""
-        plt.figure(figsize=(10, 6))
-        days = range(len(actual))
-        
-        plt.plot(days, actual, 'b-', label='实际消耗', linewidth=2)
-        plt.plot(days, predicted, 'r--', label='预测消耗', linewidth=2)
-        plt.fill_between(days, actual, predicted, alpha=0.2, color='gray')
-        
-        plt.xlabel('天数', fontsize=12)
-        plt.ylabel(f'{resource_name}消耗量', fontsize=12)
-        plt.title(f'{resource_name}消耗预测 vs 实际', fontsize=14)
-        plt.legend()
-        plt.grid(True, alpha=0.3)
-        
-        # 添加统计数据
-        mae = np.mean(np.abs(np.array(actual) - np.array(predicted)))
-        plt.text(0.02, 0.98, f'平均绝对误差: {mae:.2f}', 
-                 transform=plt.gca().transAxes,
-                 verticalalignment='top',
-                 bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
-        
-        plt.tight_layout()
-        plt.show()
-
-# 使用示例
-predictor = ResourcePredictor()
-
-# 生成数据
-X, y_water, y_food, y_oxygen = predictor.generate_training_data(num_people=50, days=100)
-
-# 训练水消耗模型
-print("训练水消耗预测模型...")
-score_water = predictor.train_model(X, y_water)
-print(f"模型R²分数: {score_water:.4f}")
-
-# 进行预测
-future_predictions = predictor.predict(
-    current_day=100, 
-    num_people=50, 
-    emergency_level=2, 
-    activity_level=1.2,
-    future_days=30
-)
-
-print(f"\n未来30天水消耗预测:")
-for day, pred in enumerate(future_predictions, 1):
-    print(f"第{day:2d}天: {pred:7.1f}升")
-
-# 绘制对比图（使用最后30天数据作为验证）
-actual_last_30 = y_water[-30:]
-predicted_last_30 = predictor.predict(70, 50, 1, 1.0, 30)
-predictor.plot_predictions(actual_last_30, predicted_last_30, "水")
-

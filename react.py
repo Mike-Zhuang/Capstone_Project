@@ -85,25 +85,3 @@ class EmergencyDecisionTree:
             "priority": 1,
             "resources_needed": {"energy": 100, "manpower": 5}
         }
-
-# 测试紧急决策
-decision_system = EmergencyDecisionTree()
-
-emergencies = [
-    ("radiation_high", "high"),
-    ("toxic_gas", "medium"),
-    ("power_failure", "high"),
-    ("unknown_emergency", "low")
-]
-
-print("=== 避难所紧急决策系统 ===\n")
-
-for emergency_type, severity in emergencies:
-    decision = decision_system.make_decision(emergency_type, severity)
-    
-    print(f"紧急情况: {emergency_type} ({severity})")
-    print(f"优先级: {decision['priority']}")
-    print(f"立即行动: {decision['immediate_action']}")
-    print(f"子行动: {', '.join(decision['sub_actions'])}")
-    print(f"所需资源: {decision['resources_needed']}")
-    print("-" * 50)
