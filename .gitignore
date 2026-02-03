@@ -184,3 +184,5 @@ training_output/
 *.pptx
 *.xls
 *.xlsx
+*.jpg
+*.png
