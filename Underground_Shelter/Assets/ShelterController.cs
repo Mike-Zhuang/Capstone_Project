@@ -73,7 +73,7 @@ public class ShelterController : MonoBehaviour
 
         // 5. Toxic gas visual effect
         if (toxicGasOutside != null) toxicGasOutside.SetActive(currentMode == "g");
-        
+
         // 6. Oxygen bubbles effect
         if (oxygenBubbles != null)
         {
@@ -88,7 +88,7 @@ public class ShelterController : MonoBehaviour
     {
         currentMode = "r";
         targetShieldY = shieldClosedY; // Lower lead shield
-        
+
         // Send command to Python backend!
         if (connector != null) connector.SendCommand("r");
     }
@@ -97,16 +97,16 @@ public class ShelterController : MonoBehaviour
     {
         currentMode = "g";
         targetShieldY = shieldOpenY; // Raise lead shield
-        
+
         // Send command to Python backend!
         if (connector != null) connector.SendCommand("g");
     }
-    
+
     void TriggerOxygen()
     {
         currentMode = "o";
         targetShieldY = shieldOpenY;
-        
+
         // Send command to Python backend!
         if (connector != null) connector.SendCommand("o");
     }
@@ -115,7 +115,7 @@ public class ShelterController : MonoBehaviour
     {
         currentMode = "n";
         targetShieldY = shieldOpenY;
-        
+
         // Send command to Python backend!
         if (connector != null) connector.SendCommand("n");
     }
@@ -128,7 +128,7 @@ public class ShelterController : MonoBehaviour
         float waterUsage = 0;
         string pythonAlert = "SYSTEM NORMAL";
         string pythonAction = "MONITORING";
-        
+
         if (connector != null && connector.latestData != null)
         {
             waterUsage = connector.latestData.prediction_water;
