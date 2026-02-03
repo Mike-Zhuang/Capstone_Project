@@ -153,6 +153,8 @@ class ResourcePredictor:
     
     def _generate_training_plots(self, X, y, y_pred):
         """Generate and save training visualization plots"""
+        from sklearn.model_selection import learning_curve
+        
         # Create output directory
         output_dir = os.path.join(os.path.dirname(__file__), 'training_output')
         os.makedirs(output_dir, exist_ok=True)
@@ -160,9 +162,9 @@ class ResourcePredictor:
         # Set style
         plt.style.use('seaborn-v0_8-darkgrid') if 'seaborn-v0_8-darkgrid' in plt.style.available else None
         
-        # Create figure with subplots
-        fig, axes = plt.subplots(2, 2, figsize=(14, 10))
-        fig.suptitle('AI Resource Consumption Model - Training Report', fontsize=14, fontweight='bold')
+        # Create figure with 6 subplots (3x2)
+        fig, axes = plt.subplots(3, 2, figsize=(14, 15))
+        fig.suptitle('AI Resource Consumption Model - Training Report', fontsize=16, fontweight='bold', y=0.98)
         
         # Plot 1: Actual vs Predicted
         ax1 = axes[0, 0]
@@ -170,46 +172,91 @@ class ResourcePredictor:
         ax1.plot([y.min(), y.max()], [y.min(), y.max()], 'r--', lw=2, label='Perfect Prediction')
         ax1.set_xlabel('Actual Water Consumption (L/day)')
         ax1.set_ylabel('Predicted Water Consumption (L/day)')
-        ax1.set_title('Actual vs Predicted Values')
+        ax1.set_title('1. Actual vs Predicted Values')
         ax1.legend()
+        r2 = self.training_history['metrics']['r2_score']
+        ax1.annotate(f'R² = {r2:.4f}', xy=(0.05, 0.95), xycoords='axes fraction', 
+                    fontsize=10, fontweight='bold', va='top',
+                    bbox=dict(boxstyle='round', facecolor='lightgreen', alpha=0.8))
         
-        # Plot 2: Residuals distribution
+        # Plot 2: Learning Curve (Loss Curve equivalent for Linear Regression)
         ax2 = axes[0, 1]
+        X_poly = self.poly.transform(X)
+        train_sizes = np.linspace(0.1, 1.0, 10)
+        train_sizes_abs, train_scores, val_scores = learning_curve(
+            LinearRegression(), X_poly, y, 
+            train_sizes=train_sizes, cv=5, scoring='neg_mean_squared_error'
+        )
+        train_mse = -train_scores.mean(axis=1)
+        val_mse = -val_scores.mean(axis=1)
+        ax2.plot(train_sizes_abs, train_mse, 'o-', color='#3498db', label='Training Loss', linewidth=2)
+        ax2.plot(train_sizes_abs, val_mse, 'o-', color='#e74c3c', label='Validation Loss', linewidth=2)
+        ax2.fill_between(train_sizes_abs, train_mse - (-train_scores).std(axis=1), 
+                        train_mse + (-train_scores).std(axis=1), alpha=0.2, color='#3498db')
+        ax2.fill_between(train_sizes_abs, val_mse - (-val_scores).std(axis=1), 
+                        val_mse + (-val_scores).std(axis=1), alpha=0.2, color='#e74c3c')
+        ax2.set_xlabel('Training Set Size')
+        ax2.set_ylabel('Mean Squared Error (Loss)')
+        ax2.set_title('2. Learning Curve (MSE Loss)')
+        ax2.legend(loc='upper right')
+        ax2.grid(True, alpha=0.3)
+        
+        # Plot 3: Residuals distribution
+        ax3 = axes[1, 0]
         residuals = y - y_pred
-        ax2.hist(residuals, bins=20, color='#2ecc71', edgecolor='black', alpha=0.7)
-        ax2.axvline(x=0, color='red', linestyle='--', linewidth=2)
-        ax2.set_xlabel('Residual (Actual - Predicted)')
-        ax2.set_ylabel('Frequency')
-        ax2.set_title('Residuals Distribution')
-        ax2.annotate(f'Mean: {np.mean(residuals):.2f}\nStd: {np.std(residuals):.2f}', 
+        ax3.hist(residuals, bins=20, color='#2ecc71', edgecolor='black', alpha=0.7)
+        ax3.axvline(x=0, color='red', linestyle='--', linewidth=2, label='Zero Error')
+        ax3.set_xlabel('Residual (Actual - Predicted)')
+        ax3.set_ylabel('Frequency')
+        ax3.set_title('3. Residuals Distribution')
+        ax3.annotate(f'Mean: {np.mean(residuals):.2f}\nStd: {np.std(residuals):.2f}', 
                     xy=(0.95, 0.95), xycoords='axes fraction', ha='right', va='top',
                     bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
-        
-        # Plot 3: Consumption over time
-        ax3 = axes[1, 0]
-        days = X[:, 0]
-        ax3.plot(days, y, 'b-', alpha=0.7, label='Actual', linewidth=1.5)
-        ax3.plot(days, y_pred, 'r--', alpha=0.7, label='Predicted', linewidth=1.5)
-        ax3.fill_between(days, y, y_pred, alpha=0.3, color='gray')
-        ax3.set_xlabel('Day')
-        ax3.set_ylabel('Water Consumption (L/day)')
-        ax3.set_title('Water Consumption Over Time')
         ax3.legend()
         
-        # Plot 4: Feature importance (coefficients)
+        # Plot 4: Consumption by Emergency Level
         ax4 = axes[1, 1]
-        feature_names = ['Intercept', 'Day', 'Population', 'Emergency', 'Activity', 
-                        'Day²', 'Day×Pop', 'Day×Emerg', 'Day×Act',
-                        'Pop²', 'Pop×Emerg', 'Pop×Act',
-                        'Emerg²', 'Emerg×Act', 'Act²']
-        coefs = self.model.coef_[:len(feature_names)]
-        colors = ['#e74c3c' if c < 0 else '#3498db' for c in coefs]
-        bars = ax4.barh(range(len(coefs)), coefs, color=colors, alpha=0.7, edgecolor='black')
-        ax4.set_yticks(range(len(coefs)))
-        ax4.set_yticklabels(feature_names[:len(coefs)], fontsize=8)
-        ax4.set_xlabel('Coefficient Value')
-        ax4.set_title('Feature Importance (Model Coefficients)')
-        ax4.axvline(x=0, color='black', linestyle='-', linewidth=0.5)
+        emergency_levels = X[:, 2]
+        for level in [1, 2, 3]:
+            mask = emergency_levels == level
+            if np.any(mask):
+                level_labels = ['Normal', 'Warning', 'Critical']
+                colors = ['#2ecc71', '#f39c12', '#e74c3c']
+                ax4.scatter(y[mask], y_pred[mask], alpha=0.7, label=f'Level {level}: {level_labels[level-1]}',
+                          color=colors[level-1], edgecolors='black', linewidth=0.3, s=60)
+        ax4.plot([y.min(), y.max()], [y.min(), y.max()], 'k--', lw=1.5, alpha=0.5)
+        ax4.set_xlabel('Actual Consumption (L/day)')
+        ax4.set_ylabel('Predicted Consumption (L/day)')
+        ax4.set_title('4. Prediction Accuracy by Emergency Level')
+        ax4.legend()
+        
+        # Plot 5: Consumption over time
+        ax5 = axes[2, 0]
+        days = X[:, 0]
+        ax5.plot(days, y, 'b-', alpha=0.7, label='Actual', linewidth=1.5)
+        ax5.plot(days, y_pred, 'r--', alpha=0.7, label='Predicted', linewidth=1.5)
+        ax5.fill_between(days, y, y_pred, alpha=0.3, color='gray', label='Error Region')
+        ax5.set_xlabel('Day')
+        ax5.set_ylabel('Water Consumption (L/day)')
+        ax5.set_title('5. Water Consumption Over Time')
+        ax5.legend()
+        
+        # Plot 6: Cross-Validation Scores
+        ax6 = axes[2, 1]
+        cv_scores = cross_val_score(LinearRegression(), X_poly, y, cv=5, scoring='r2')
+        bars = ax6.bar(range(1, 6), cv_scores, color=['#3498db', '#2ecc71', '#9b59b6', '#f39c12', '#e74c3c'],
+                      edgecolor='black', alpha=0.8)
+        ax6.axhline(y=cv_scores.mean(), color='red', linestyle='--', linewidth=2, label=f'Mean: {cv_scores.mean():.4f}')
+        ax6.fill_between([0.5, 5.5], cv_scores.mean() - cv_scores.std(), cv_scores.mean() + cv_scores.std(),
+                        alpha=0.2, color='red', label=f'±1 Std: {cv_scores.std():.4f}')
+        ax6.set_xlabel('Fold Number')
+        ax6.set_ylabel('R² Score')
+        ax6.set_title('6. 5-Fold Cross-Validation Results')
+        ax6.set_xticks(range(1, 6))
+        ax6.set_ylim([min(0.8, cv_scores.min() - 0.05), 1.0])
+        ax6.legend(loc='lower right')
+        for i, v in enumerate(cv_scores):
+            ax6.text(i + 1, v + 0.005, f'{v:.3f}', ha='center', fontsize=9, fontweight='bold')
         
         plt.tight_layout()
         plt.savefig(os.path.join(output_dir, 'training_report.png'), dpi=150, bbox_inches='tight')
