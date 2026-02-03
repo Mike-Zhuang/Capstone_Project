@@ -436,7 +436,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Chengbo Zhuang (庄程博)**
 
-- 🎓 University of Liverpool / 西交利物浦大学
+- 🎓 Tongji University, Shanghai, China
 - 📧 Contact via GitHub Issues
 
 ---
