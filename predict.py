@@ -3,6 +3,8 @@ import pandas as pd
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.model_selection import cross_val_score
+import matplotlib
+matplotlib.use('Agg')  # Use non-interactive backend (fixes macOS threading crash)
 import matplotlib.pyplot as plt
 import sys
 import time

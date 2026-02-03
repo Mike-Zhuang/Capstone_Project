@@ -63,6 +63,30 @@ def input_listener():
         except EOFError:
             break
 
+def unity_command_listener(conn):
+    """Background thread to receive commands from Unity"""
+    global current_command, running
+    conn.setblocking(False)  # Non-blocking mode
+    buffer = ""
+    
+    while running:
+        try:
+            data = conn.recv(1024)
+            if data:
+                buffer += data.decode('utf-8')
+                while '\n' in buffer:
+                    line, buffer = buffer.split('\n', 1)
+                    cmd = line.strip().lower()
+                    if cmd in ['n', 'r', 'g', 'o']:
+                        current_command = cmd
+                        mode_names = {'n': 'Normal', 'r': 'Radiation', 'g': 'Gas', 'o': 'Oxygen'}
+                        print(f"\n>>> 🎮 Unity Command: {mode_names.get(cmd, cmd)}")
+        except BlockingIOError:
+            pass  # No data available, continue
+        except Exception as e:
+            break
+        time.sleep(0.1)
+
 def start_server():
     global current_command, running
     
@@ -84,9 +108,15 @@ def start_server():
         t.daemon = True  # Daemon thread: exits when main program exits
         t.start()
         
+        # --- Start background thread for Unity commands ---
+        t_unity = threading.Thread(target=unity_command_listener, args=(conn,))
+        t_unity.daemon = True
+        t_unity.start()
+        
         print("------------------------------------------------")
         print("🎬 LIVE DATA STREAM ACTIVE (auto-refresh every second)")
-        print("   Commands: [n] Normal | [r] Radiation | [g] Gas | [o] Oxygen | [q] Quit")
+        print("   Terminal: [n] Normal | [r] Radiation | [g] Gas | [o] Oxygen | [q] Quit")
+        print("   Unity buttons also work!")
         print("------------------------------------------------")
 
         # State variables
@@ -141,6 +171,10 @@ def start_server():
                 )
                 pred_val = round(future[0], 1)
                 status_report["prediction_water"] = pred_val
+                
+                # Live debug output - shows current state every second
+                mode_names = {'n': 'NORMAL', 'r': 'RADIATION', 'g': 'GAS', 'o': 'OXYGEN'}
+                print(f"\r   [LIVE] Mode: {mode_names.get(current_command, '?')} | Level: {current_emergency_level} | Water: {pred_val} L/day    ", end='', flush=True)
                 
             except Exception as e:
                 print(f"   [AI Error] Prediction failed: {e}")
