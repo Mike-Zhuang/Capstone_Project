@@ -32,7 +32,7 @@ class EmergencyDecisionTree:
         }
     
     def make_decision(self, emergency_type, severity="high", additional_data=None):
-        """根据紧急情况做出决策"""
+        """Make decisions based on emergency situations"""
         if emergency_type not in self.decision_tree:
             return self.default_response()
         
@@ -44,15 +44,15 @@ class EmergencyDecisionTree:
             "immediate_action": decision["action"],
             "sub_actions": [],
             "priority": self.calculate_priority(severity),
-            "timestamp": "2024-01-15 14:30:00"  # 实际应使用datetime.now()
+            "timestamp": "2024-01-15 14:30:00"  # Should use datetime.now() in production
         }
         
-        # 根据严重程度添加子行动
+        # Add sub-actions based on severity
         if severity == "high":
             for sub_action in decision["sub_decisions"].values():
                 response["sub_actions"].append(sub_action)
         
-        # 添加资源需求
+        # Add resource requirements
         response["resources_needed"] = self.estimate_resources(emergency_type, severity)
         
         return response
@@ -62,7 +62,7 @@ class EmergencyDecisionTree:
         return priorities.get(severity, 3)
     
     def estimate_resources(self, emergency_type, severity):
-        """估计应对紧急情况所需的资源"""
+        """Estimate resources required to handle emergency situations"""
         resource_map = {
             "radiation_high": {"energy": 50, "manpower": 2},
             "toxic_gas": {"filters": 3, "energy": 20},
@@ -72,7 +72,7 @@ class EmergencyDecisionTree:
         
         base = resource_map.get(emergency_type, {})
         
-        # 根据严重程度调整
+        # Adjust based on severity level
         multiplier = {"low": 0.5, "medium": 1.0, "high": 2.0}.get(severity, 1.0)
         
         return {k: v * multiplier for k, v in base.items()}

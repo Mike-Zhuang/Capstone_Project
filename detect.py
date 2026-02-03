@@ -3,17 +3,17 @@ import random
 
 class AirQualityMonitor:
     def __init__(self):
-        # 传感器阈值
+        # Sensor thresholds
         self.RADIATION_THRESHOLD = 100  # uSv/h
         self.TOXIC_GAS_THRESHOLD = 50   # ppm
         self.CO2_THRESHOLD = 5000       # ppm
         
-        # 系统状态
+        # System status
         self.air_mode = "normal"  # normal / internal_circulation / emergency
         self.filter_status = "active"
         
     def simulate_sensor_data(self):
-        """模拟传感器数据"""
+        """Simulate sensor data"""
         return {
             "radiation": random.uniform(10, 150),
             "toxic_gas": random.uniform(10, 80),
@@ -22,23 +22,23 @@ class AirQualityMonitor:
         }
     
     def check_air_quality(self, sensor_data):
-        """检查空气质量并触发相应响应"""
+        """Check air quality and trigger corresponding responses"""
         alerts = []
         
-        # 检查辐射
+        # Check radiation
         if sensor_data["radiation"] > self.RADIATION_THRESHOLD:
-            alerts.append("⚠️ 高辐射警报！启动铅屏蔽层")
+            alerts.append("⚠️ High radiation alert! Activating lead shielding")
             
-        # 检查有毒气体
+        # Check toxic gas
         if sensor_data["toxic_gas"] > self.TOXIC_GAS_THRESHOLD:
-            alerts.append("⚠️ 检测到有毒气体！切换内循环模式")
+            alerts.append("⚠️ Toxic gas detected! Switching to internal circulation mode")
             
-        # 检查CO2浓度
+        # Check CO2 concentration
         if sensor_data["co2"] > self.CO2_THRESHOLD:
-            alerts.append("⚠️ CO2浓度过高！启动碳过滤")
+            alerts.append("⚠️ CO2 level too high! Activating carbon filter")
             
-        # 检查氧气浓度
+        # Check oxygen concentration
         if sensor_data["oxygen"] < 19.5:
-            alerts.append("⚠️ 氧气浓度偏低！启动电解制氧")
+            alerts.append("⚠️ Oxygen level low! Activating electrolysis oxygen generator")
             
         return alerts
