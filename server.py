@@ -142,6 +142,7 @@ def start_server():
 
             # --- B. Prepare data packet ---
             status_report = {
+                "mode": current_command,  # Send current mode to Unity!
                 "sensor": current_data,
                 "alert_message": "SYSTEM NORMAL",
                 "action_plan": "MONITORING",

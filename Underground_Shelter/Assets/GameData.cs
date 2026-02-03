@@ -12,6 +12,7 @@ public class SensorData
 [Serializable]
 public class ServerData
 {
+    public string mode;  // Current mode from Python: n/r/g/o
     public SensorData sensor;
     public string alert_message;
     public string action_plan;

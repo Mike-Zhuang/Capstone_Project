@@ -42,6 +42,21 @@ public class ShelterController : MonoBehaviour
 
     void Update()
     {
+        // 0. Sync mode from Python backend (for terminal commands)
+        if (connector != null && connector.latestData != null && !string.IsNullOrEmpty(connector.latestData.mode))
+        {
+            string pythonMode = connector.latestData.mode;
+            if (pythonMode != currentMode)
+            {
+                currentMode = pythonMode;
+                // Update shield target based on mode
+                if (currentMode == "r")
+                    targetShieldY = shieldClosedY;  // Radiation: lower shield
+                else
+                    targetShieldY = shieldOpenY;    // Other modes: raise shield
+            }
+        }
+
         // 1. Lead shield animation
         if (leadShield != null)
         {
