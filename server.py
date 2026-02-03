@@ -11,10 +11,14 @@ decision_system = EmergencyDecisionTree()
 predictor = ResourcePredictor()
 
 # Pre-train the model (training a linear regression model to predict future water consumption)
-print("Training AI resource consumption model...")
+print("\n" + "="*50)
+print("🚀 UNDERGROUND SHELTER AI SYSTEM")
+print("="*50)
 X_train, y_water, y_food, y_oxygen = predictor.generate_training_data(num_people=50)
 predictor.train_model(X_train, y_water)
-print("✅ Model ready!")
+print("\n" + "="*50)
+print("✅ AI MODEL READY FOR DEPLOYMENT")
+print("="*50)
 
 def start_server():
     host = '127.0.0.1'
