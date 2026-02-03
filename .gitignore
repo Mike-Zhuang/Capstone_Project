@@ -170,3 +170,17 @@ Underground_Shelter/Assets/AssetStoreTools*
 *.bak
 *.swp
 *~
+# ===========================
+# Training Output
+# ===========================
+training_output/
+
+# ===========================
+# Office Documents
+# ===========================
+*.doc
+*.docx
+*.ppt
+*.pptx
+*.xls
+*.xlsx
