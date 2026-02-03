@@ -1,0 +1,12 @@
+# Underground Shelter AI System - Python Dependencies
+# 地下避难所 AI 系统 - Python 依赖
+
+# Core Scientific Computing | 核心科学计算
+numpy>=1.24.0
+pandas>=2.0.0
+
+# Machine Learning | 机器学习
+scikit-learn>=1.3.0
+
+# Visualization | 可视化
+matplotlib>=3.7.0

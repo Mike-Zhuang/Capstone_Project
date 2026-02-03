@@ -23,7 +23,6 @@ public class PythonConnector : MonoBehaviour
     {
         try
         {
-            // Port must be 65500 (matching your Python server)
             client = new TcpClient("127.0.0.1", 65500);
             stream = client.GetStream();
             isRunning = true;
